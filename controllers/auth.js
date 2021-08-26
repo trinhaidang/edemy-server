@@ -78,3 +78,14 @@ export const logout = async (req, res) => {
         return res.status(400).send("Error. Try again.");
     }
 }
+
+export const me = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select('-password').exec();
+        console.log("CURRENT_USER", user);
+        return res.json(user);
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
