@@ -24,7 +24,7 @@ mongoose.connect(process.env.DATABASE, {
 
 // use: apply middleware
 app.use(cors());
-app.use(express.json());
+app.use("/",express.json());
 app.use(morgan("dev"));
 
 // we need this because "cookie" is true in csrfProtection
@@ -39,6 +39,7 @@ readdirSync('./routes').map(
 app.use(csrfProtection);
 
 app.get("/api/csrf-token", (req, res) => {
+    // console.log("GET CSRF TOKEN: ", res);
     res.json({ csrfToken: req.csrfToken() });
 });
 
