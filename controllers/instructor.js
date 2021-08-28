@@ -50,6 +50,21 @@ export const getAccountStatus = async (req, res) => {
     }
 }
 
+export const currentInstructor = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select('-password').exec();
+        if (!user) return res.status(400).send("Instructor not found.");
+        if(!user.role.includes(RoleEnum.INSTRUCTOR)) {
+            return res.status(403).send("Unauthorized. Not an instructor.");
+        } 
+        console.log("CURRENT INSTRUCTOR", user);
+        return res.json({ ok: true });
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
 
 
 // real
