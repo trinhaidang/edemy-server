@@ -35,7 +35,7 @@ export const register = async (req, res) => {
             password: hashedPassword,
         });
         await user.save();
-        console.log("saved user: ", user);
+        // console.log("saved user: ", user);
         return res.json({ ok: true });
     } catch (err) {
         console.log(err);
