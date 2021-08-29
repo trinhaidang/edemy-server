@@ -3,14 +3,9 @@ import { comparePassword, hashPassword } from "../utils/auth";
 import jwt from "jsonwebtoken";
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
+import { AwsConfig } from "../utils/constants";
 
-const awsConfig = {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION,
-    apiVersion: process.env.AWS_API_VERSION,
-}
-const SES = new AWS.SES(awsConfig);
+const SES = new AWS.SES(AwsConfig);
 
 export const register = async (req, res) => {
     try {

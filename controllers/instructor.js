@@ -57,7 +57,7 @@ export const currentInstructor = async (req, res) => {
         if(!user.role.includes(RoleEnum.INSTRUCTOR)) {
             return res.status(403).send("Unauthorized. Not an instructor.");
         } 
-        console.log("CURRENT INSTRUCTOR", user);
+        // console.log("CURRENT INSTRUCTOR", user);
         return res.json({ ok: true });
     } catch (err) {
         console.log(err);
