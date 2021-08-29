@@ -10,3 +10,6 @@ export const AwsConfig = {
     region: process.env.AWS_REGION,
     apiVersion: process.env.AWS_API_VERSION,
 }
+
+export const DEFAULT_PRICE = 19;
+export const DEFAULT_CURRENCY = "VND";

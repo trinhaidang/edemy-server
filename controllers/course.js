@@ -1,6 +1,8 @@
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
 import { AwsConfig } from "../utils/constants";
+import Course from "../models/course";
+import slugify from "slugify";
 
 const S3 = new AWS.S3(AwsConfig);
 
@@ -57,6 +59,50 @@ export const removeImage = async (req, res) => {
             res.send({ ok: true });
         });
 
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const create = async (req, res) => {
+    try {
+        // check duplicate name
+        const exist = await Course.findOne({
+            slug: slugify(req.body.name.toLowerCase()),
+        });
+        if(exist) return res.status(400).send("Course Name is taken. Try another name");
+
+        //
+        const course = await new Course({
+            slug: slugify(req.body.name),
+            instructor: req.user._id,
+            ...req.body,
+        }).save();
+        
+        res.send({ course });
+
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const readBySlug = async (req, res) => {
+    try {
+        const course = await Course.findOne({slug: req.params.slug}).populate("instructor", "_id name").exec();
+        res.send({ course });
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const readById = async (req, res) => {
+    try {
+        // console.log("read by id: ",req.params);
+        const course = await Course.findOne({_id: req.params._id.trim()}).populate("instructor", "_id name").exec();
+        res.send({ course });
     } catch (err) {
         console.log(err);
         return res.status(400).send("Error. Try again.");
