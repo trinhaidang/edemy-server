@@ -90,6 +90,26 @@ export const createCourse = async (req, res) => {
     }
 }
 
+export const updateCourse = async (req, res) => {
+    try {
+        const {slug} = req.params;
+        const course = await Course.findOne({slug}).exec();
+        if(!course) return res.status(400).send("Course not found.");
+        if (req.user._id != course.instructor) {
+            console.log("USER ID: ", req.user._id);
+            console.log("INSTRUCTOR ID: ", course.instructor);
+            return res.status(400).send("Unauthorized. You cannot update this course.");
+        }
+
+        const updated = await Course.findOneAndUpdate({slug}, req.body, {new: true}).exec();
+        res.json(updated);
+
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
 export const readBySlug = async (req, res) => {
     try {
         const course = await Course.findOne({ slug: req.params.slug }).populate("instructor", "_id name").exec();
@@ -207,3 +227,4 @@ export const addLessonByCourseSLug = async (req, res) => {
         return res.status(400).send("Error. Try again.");
     }
 }
+
