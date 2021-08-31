@@ -1,7 +1,8 @@
 import express from "express";
-import { addLessonByCourseSLug, createCourse, readById, readBySlug, removeImage, removeMedia, updateCourse, uploadImage, uploadMedia } from "../controllers/course";
+import { createCourse, readById, readBySlug, removeImage, updateCourse, uploadImage } from "../controllers/course";
 import { isInstructor, requireSignin } from "../middlewares";
 import formidable from "express-formidable";
+import { addLessonByCourseSLug, removeLesson, removeMedia, updateLessonByCourseSLug, uploadMedia } from "../controllers/lesson";
 
 const router = express.Router();
 
@@ -19,5 +20,8 @@ router.get("/course/id/:courseId", readById);
 router.post("/course/upload-media/:instructorId", requireSignin, formidable(), uploadMedia);
 router.post("/course/remove-media/:instructorId", requireSignin, removeMedia);
 router.post("/course/lesson/:slug/:instructorId", requireSignin, addLessonByCourseSLug);
+router.put("/course/lesson/:slug/:instructorId", requireSignin, updateLessonByCourseSLug);
+
+router.put("/course/:slug/:lessonId", requireSignin, removeLesson);    // remove lesson 
 
 module.exports = router;
