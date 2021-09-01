@@ -116,7 +116,7 @@ export const removeLesson = async (req, res) => {
         // console.log("remove lesson");
         const { slug, lessonId } = req.params;
         const course = await Course.findOne({ slug }).exec();
-        if (!course) return res.status(400).send("Course not found.");
+        if (!course) return res.status(400).send("Course not found. Cannot remove lesson");
         if (req.user._id != course.instructor) {
             console.log("USER ID: ", req.user._id);
             console.log("INSTRUCTOR ID: ", course.instructor);
@@ -150,10 +150,10 @@ export const removeLesson = async (req, res) => {
 
 export const updateLessonByCourseSLug = async (req, res) => {
     try {
-        // console.log("update lesson");
+        console.log("update lesson");
         const { slug, lessonId } = req.params;
         const course = await Course.findOne({ slug }).select("instructor").exec();
-        if (!course) return res.status(400).send("Course not found.");
+        if (!course) return res.status(400).send("Course not found. Cannot update lesson");
         if (req.user._id != course.instructor._id) {
             console.log("USER ID: ", req.user._id);
             console.log("INSTRUCTOR ID: ", course.instructor._id);
@@ -162,13 +162,13 @@ export const updateLessonByCourseSLug = async (req, res) => {
 
         const { _id, title, content, media, free_preview } = req.body;
         const updated = await Course.updateOne(
-            { "lesson._id": _id },
+            { "lessons._id": _id },
             {
                 $set: {
-                    "lesson.$.title": title,
-                    "lesson.$.content": content,
-                    "lesson.$.media": media,
-                    "lesson.$.free_preview": free_preview,
+                    "lessons.$.title": title,
+                    "lessons.$.content": content,
+                    "lessons.$.media": media,
+                    "lessons.$.free_preview": free_preview,
                 }
             },
             { new: true }

@@ -7,6 +7,18 @@ import slugify from "slugify";
 
 const S3 = new AWS.S3(AwsConfig);
 
+export const getAllPublishedCourses = async (req, res) => {
+    try {
+        const all = await Course.find({published: true})
+            .populate("instructor", "_id name")
+            .exec();
+        res.json(all);
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
 export const uploadImage = async (req, res) => {
     try {
         // console.log(req.body);
@@ -94,7 +106,7 @@ export const updateCourse = async (req, res) => {
     try {
         const { slug } = req.params;
         const course = await Course.findOne({ slug }).exec();
-        if (!course) return res.status(400).send("Course not found.");
+        if (!course) return res.status(400).send("Course not found. Cannot update");
         if (req.user._id != course.instructor) {
             console.log("USER ID: ", req.user._id);
             console.log("INSTRUCTOR ID: ", course.instructor);
@@ -124,8 +136,51 @@ export const readById = async (req, res) => {
     try {
         // console.log("read by id: ",req.params);
         const course = await Course.findOne({ _id: req.params.courseId.trim() }).populate("instructor", "_id name").exec();
-        if (!course) return res.status(400).send("Course not found.");
+        if (!course) return res.status(400).send("Course not found. Cannot view by Id");
         res.send({ course });
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const publishCourse = async (req, res) => {
+    try {
+        // console.log("publishCourse: ", req.params);
+        const courseId = req.params.courseId.trim();
+        console.log(courseId);
+        const course = await Course.findOne({ _id: courseId }).select("instructor").exec();
+        if (!course) return res.status(400).send("Course not found. Cannot publish");
+        if (req.user._id != course.instructor) {
+            console.log("USER ID: ", req.user._id);
+            console.log("INSTRUCTOR ID: ", course.instructor);
+            return res.status(400).send("Unauthorized. You cannot publish this course.");
+        }
+
+        const updated = await Course.findByIdAndUpdate(courseId, { published: true }, { new: true }).exec();
+        res.json(updated);
+
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const unpublishCourse = async (req, res) => {
+    try {
+        // console.log("unpublishCourse: ", req.params);
+        const courseId = req.params.courseId.trim();
+        const course = await Course.findOne({ courseId }).select("instructor").exec();
+        if (!course) return res.status(400).send("Course not found. Cannot unpublish");
+        if (req.user._id != course.instructor) {
+            console.log("USER ID: ", req.user._id);
+            console.log("INSTRUCTOR ID: ", course.instructor);
+            return res.status(400).send("Unauthorized. You cannot unpublish this course.");
+        }
+
+        const updated = await Course.findByIdAndUpdate(courseId, { published: false }, { new: true }).exec();
+        res.json(updated);
+
     } catch (err) {
         console.log(err);
         return res.status(400).send("Error. Try again.");
