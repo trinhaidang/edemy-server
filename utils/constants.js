@@ -12,4 +12,4 @@ export const AwsConfig = {
 }
 
 export const DEFAULT_PRICE = 19;
-export const DEFAULT_CURRENCY = "VND";
+export const DEFAULT_CURRENCY = "vnd";
