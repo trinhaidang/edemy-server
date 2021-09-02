@@ -3,13 +3,15 @@ import { nanoid } from "nanoid";
 import { AwsConfig } from "../utils/constants";
 import Course from "../models/course";
 import slugify from "slugify";
+import User from "../models/user";
+import course from "../models/course";
 // import { readFileSync } from "fs";
 
 const S3 = new AWS.S3(AwsConfig);
 
 export const getAllPublishedCourses = async (req, res) => {
     try {
-        const all = await Course.find({published: true})
+        const all = await Course.find({ published: true })
             .populate("instructor", "_id name")
             .exec();
         res.json(all);
@@ -186,3 +188,42 @@ export const unpublishCourse = async (req, res) => {
         return res.status(400).send("Error. Try again.");
     }
 }
+
+export const checkEnrollment = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const user = await User.findById(req.user._id).exec();
+        let ids = [];
+        let length = user.courses && user.courses.length;
+        for (let i = 0; i < length; i++) {
+            ids.push(user.courses[i].toString());
+        }
+        res.json({
+            status: ids.includes(courseId),
+            course: await Course.findById(courseId).exec()
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const freeEnrollment = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await Course.findById(courseId).exec();
+        if (course.paid) return res.status(400).send("This is a paid course. Cannot enroll.");
+
+        const result = await User.findByIdAndUpdate(req.user._id, {
+            $addToSet: { courses: course._id }
+        }, { new: true }).exec();
+        res.json({
+            messsage: "Congratulations! You have successfully enrolled.",
+            course,
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
