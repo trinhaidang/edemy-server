@@ -1,5 +1,5 @@
 import express from "express";
-import { checkEnrollment, createCourse, freeEnrollment, getAllPublishedCourses, publishCourse, readById, readBySlug, removeImage, unpublishCourse, updateCourse, uploadImage } from "../controllers/course";
+import { checkEnrollment, createCourse, freeEnrollment, getAllPublishedCourses, paidEnrollment, publishCourse, readById, readBySlug, removeImage, stripeSuccess, unpublishCourse, updateCourse, uploadImage } from "../controllers/course";
 import { isInstructor, requireSignin } from "../middlewares";
 import formidable from "express-formidable";
 import { addLessonByCourseSLug, removeLesson, removeMedia, updateLessonByCourseSLug, uploadMedia } from "../controllers/lesson";
@@ -22,6 +22,8 @@ router.put("/course/unpublish/:courseId", requireSignin, unpublishCourse);
 
 router.get("/check-enrollment/:courseId", requireSignin, checkEnrollment);
 router.post("/free-enrollment/:courseId", requireSignin, freeEnrollment);
+router.post("/paid-enrollment/:courseId", requireSignin, paidEnrollment);
+router.post("/stripe-success/:courseId", requireSignin, stripeSuccess);
 
 // process lesson
 router.post("/course/upload-media/:instructorId", requireSignin, formidable(), uploadMedia);

@@ -13,3 +13,4 @@ export const AwsConfig = {
 
 export const DEFAULT_PRICE = 19;
 export const DEFAULT_CURRENCY = "vnd";
+export const APP_FEE = 0.3;
