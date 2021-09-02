@@ -1,12 +1,16 @@
 import express from "express";
-import { checkEnrollment, createCourse, freeEnrollment, getAllPublishedCourses, paidEnrollment, publishCourse, readById, readBySlug, removeImage, stripeSuccess, unpublishCourse, updateCourse, uploadImage } from "../controllers/course";
-import { isInstructor, requireSignin } from "../middlewares";
+import { checkEnrollment, createCourse, freeEnrollment, getAllPublishedCourses, getAllUserCourses, paidEnrollment, publishCourse, readById, readBySlug, removeImage, stripeSuccess, unpublishCourse, updateCourse, uploadImage } from "../controllers/course";
+import { isEnrolled, isInstructor, requireSignin } from "../middlewares";
 import formidable from "express-formidable";
 import { addLessonByCourseSLug, removeLesson, removeMedia, updateLessonByCourseSLug, uploadMedia } from "../controllers/lesson";
 
 const router = express.Router();
 
 router.get("/courses", getAllPublishedCourses);
+
+// user
+router.get("/user-courses", requireSignin, getAllUserCourses);
+router.get("/user/course/:slug", requireSignin, isEnrolled, readBySlug);
 
 // process image
 router.post("/course/upload-image", uploadImage);

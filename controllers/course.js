@@ -22,6 +22,18 @@ export const getAllPublishedCourses = async (req, res) => {
     }
 }
 
+export const getAllUserCourses = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).exec();
+        const courses = await Course.find({_id: {$in: user.courses } })
+            .populate("instructor", "_id name").exec();
+        res.json(courses);
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
 export const uploadImage = async (req, res) => {
     try {
         // console.log(req.body);
