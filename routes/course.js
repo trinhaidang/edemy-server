@@ -1,5 +1,5 @@
 import express from "express";
-import { checkEnrollment, createCourse, freeEnrollment, getAllPublishedCourses, getAllUserCourses, paidEnrollment, publishCourse, readById, readBySlug, removeImage, stripeSuccess, unpublishCourse, updateCourse, uploadImage } from "../controllers/course";
+import { checkEnrollment, createCourse, freeEnrollment, getAllPublishedCourses, getAllUserCourses, listCompleted, markCompleted, markIncompleted, paidEnrollment, publishCourse, readById, readBySlug, removeImage, stripeSuccess, unpublishCourse, updateCourse, uploadImage } from "../controllers/course";
 import { isEnrolled, isInstructor, requireSignin } from "../middlewares";
 import formidable from "express-formidable";
 import { addLessonByCourseSLug, removeLesson, removeMedia, updateLessonByCourseSLug, uploadMedia } from "../controllers/lesson";
@@ -36,5 +36,10 @@ router.post("/course/lesson/:slug/:instructorId", requireSignin, addLessonByCour
 router.put("/course/lesson/:slug/:instructorId", requireSignin, updateLessonByCourseSLug);
 
 router.delete("/course/:slug/:lessonId", requireSignin, removeLesson);    // remove lesson 
+
+// completed
+router.post("/mark-completed", requireSignin, markCompleted);
+router.post("/mark-incompleted", requireSignin, markIncompleted);
+router.post("/list-completed", requireSignin, listCompleted);
 
 module.exports = router;

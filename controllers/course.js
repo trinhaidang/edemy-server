@@ -2,6 +2,7 @@ import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
 import { APP_FEE, AwsConfig } from "../utils/constants";
 import Course from "../models/course";
+import Completed from "../models/completed";
 import slugify from "slugify";
 import User from "../models/user";
 import course from "../models/course";
@@ -25,7 +26,7 @@ export const getAllPublishedCourses = async (req, res) => {
 export const getAllUserCourses = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).exec();
-        const courses = await Course.find({_id: {$in: user.courses } })
+        const courses = await Course.find({ _id: { $in: user.courses } })
             .populate("instructor", "_id name").exec();
         res.json(courses);
     } catch (err) {
@@ -293,7 +294,7 @@ export const paidEnrollment = async (req, res) => {
         };
         console.log("SESSION: ", session);
 
-        await User.findByIdAndUpdate(req.user._id, {stripeSession: session}).exec();
+        await User.findByIdAndUpdate(req.user._id, { stripeSession: session }).exec();
         // res.send(session.id);
         res.send(session.success_url);
 
@@ -305,26 +306,99 @@ export const paidEnrollment = async (req, res) => {
 
 export const stripeSuccess = async (req, res) => {
     try {
-        console.log("stripeSuccess -----",req.params);
+        console.log("stripeSuccess -----", req.params);
         const course = await Course.findById(req.params.courseId.trim()).exec();
         if (!course) return res.status(400).send("Course not found. Cannot view by Id");
 
         const user = await User.findById(req.user._id).exec();
-        if(!user.stripeSession.id) return res.status(400).send("Course not enrolled. Cannot process stripeSuccess");
+        if (!user.stripeSession.id) return res.status(400).send("Course not enrolled. Cannot process stripeSuccess");
         // const session = await stripe.checkout.sessions.retrieve(user.stripeSession.id);
         console.log("STRIPE SUCCESS: ", course);
         const session = {
             payment_status: "paid"
         };
-        if(session.payment_status === "paid") {
+        if (session.payment_status === "paid") {
             await User.findByIdAndUpdate(user._id, {
                 $addToSet: { courses: course._id },
                 $set: { stripeSession: {} }
             }).exec();
         }
-        res.json({ok: true, course});
-    } catch (err) { 
+        res.json({ ok: true, course });
+    } catch (err) {
         console.log(err);
         return res.status(400).send("Error. Try again.");
     }
 }
+
+export const markCompleted = async (req, res) => {
+    try {
+        const { courseId, lessonId } = req.body;
+        console.log(courseId, lessonId);
+        // find if user with that course is created in Completed
+        const exist = await Completed.findOne({
+            user: req.user._id,
+            course: courseId
+        }).exec();
+        if (exist) {
+            const updated = await Completed.findOneAndUpdate(
+                {
+                    user: req.user._id,
+                    course: courseId
+                },
+                {
+                    $addToSet: { lessons: lessonId }
+                }
+            ).exec();
+            res.json({ ok: true });
+        } else {
+            const created = await new Completed({
+                user: req.user._id,
+                course: courseId,
+                lessons: lessonId
+            }).save();
+            res.json({ ok: true });
+        }
+
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const markIncompleted = async (req, res) => {
+    try {
+        const { courseId, lessonId } = req.body;
+        console.log(courseId, lessonId);
+        // find if user with that course is created in Completed
+        const updated = await Completed.findOneAndUpdate(
+            {
+                user: req.user._id,
+                course: courseId
+            },
+            {
+                $pull: { lessons: lessonId }
+            }
+        ).exec();
+        res.json({ ok: true });
+
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
+export const listCompleted = async (req, res) => {
+    try {
+        const courseId = req.body.courseId;
+        const list = await Completed.findOne({
+            user: req.user._id,
+            course: courseId
+        }).exec();
+        // console.log("listCompleted: ",list);
+        list && res.json(list.lessons);
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send("Error. Try again.");
+    }
+}
+
